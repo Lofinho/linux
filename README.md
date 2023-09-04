@@ -4,6 +4,11 @@
 # Include files from /etc/network/interfaces.d:
 source /etc/network/interfaces.d/*
 
+auto eth0:0
+iface eth0:0 inet static
+        address 10.1.1.200
+        netmask 255.0.0.0
+
 # IP ACESSO SMART
 auto eth1:0
 iface eth1:0 inet static
@@ -56,3 +61,44 @@ iface wlan1:1 inet static
         address 10.0.0.1
         netmask 255.0.0.0
 
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+# interfaces(5) file used by ifup(8) and ifdown(8)
+# Include files from /etc/network/interfaces.d:
+source /etc/network/interfaces.d/*
+
+# Função para verificar a existência de uma interface
+interface_exists() {
+    if ip addr show dev "$1" &>/dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# IP ACESSO SMART
+if interface_exists eth0:0; then
+    auto eth0:0
+    iface eth0:0 inet static
+            address 100.128.0.200
+            netmask 255.0.0.0
+fi
+
+# IP ACESSO FLORES
+if interface_exists eth2:2; then
+    auto eth2:2
+    iface eth2:2 inet static
+            address 100.128.0.200
+            netmask 255.0.0.0
+fi
