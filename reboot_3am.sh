@@ -4,27 +4,42 @@ unset LC_ALL
 clear
 echo
 echo "Digite o endereço IP do carro:"
-read -n10 -r choice
+read -n12 -r choice
 
-senha="Rsco#3083"
-
+senha1="Rsco#3083"
+senha2="rs#bus@3083"
+porta1=2222
+porta2=4444
 clear
 
 echo
 echo "Você escolheu a opção $choice"
 echo
 
-sshpass -p "$senha" ssh -T -a -p 2222 root@"$choice" <<EOF
+senha=""
+porta=""
+
+sshpass -p "$senha1" ssh -T -a -p "$porta1" root@"$choice" <<EOF
 echo '00 3 * * * /sbin/reboot' >> /var/spool/cron/crontabs/root
 EOF
 
-if [ $? -ne 0 ]; then
-  echo "----------------------------------------------------------------------------------"
-  echo "A mensagem acima mostra que o computador não conseguiu conectar-se ao equipamento"
-  echo "  Por favor verifique o cabo de rede conectado, e o Endereço IP do equipamento   "
-  echo "----------------------------------------------------------------------------------"
-  read -n1 -r -s
-  exit 1
+if [ $? -eq 0 ]; then
+  echo "Conexão bem-sucedida com senha1/porta1!"
+  senha="$senha1"
+  porta="$porta1"
+else
+  echo "Conexão falhou com senha1/porta1. Tentando senha2/porta2..."
+  sshpass -p "$senha2" ssh -T -a -p "$porta2" root@"$choice" <<EOF
+  echo '00 3 * * * /sbin/reboot' >> /var/spool/cron/crontabs/root
+EOF
+
+  if [ $? -eq 0 ]; then
+    echo "Conexão bem-sucedida com senha2/porta2!"
+    senha="$senha2"
+    porta="$porta2"
+  else
+    echo "Conexão falhou com todas as combinações."
+  fi
 fi
 
 echo
@@ -35,7 +50,7 @@ echo
 
 read -n1 -r -s -p "Pressione qualquer tecla para reiniciar o sistema e voltar para o menu.."
 
-sshpass -p "$senha" ssh -T -a -p 2222 root@"$choice" <<EOF
+sshpass -p "$senha" ssh -T -a -p "$porta" root@"$choice" <<EOF
 /sbin/reboot
 EOF
 clear

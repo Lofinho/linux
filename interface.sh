@@ -10,7 +10,7 @@ for program in $libs; do
 done
 
 # Diretório onde se encontram os scripts
-diretorio_scripts="/home/matias/"
+diretorio_scripts="/home/pi/scripts"
 
 # Função para exibir o menu principal
 menu() {

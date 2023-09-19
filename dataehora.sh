@@ -1,45 +1,53 @@
 #!/bin/bash
 unset LC_ALL
 
-senha="Rsco#3083"
+senha2="Rsco#3083"
+senha1="rs#bus@3083"
+porta2="2222"
+porta1="4444"
+
 clear
 echo
 echo "Digite o endereço IP do carro:"
-read -n10 -r choice
+read -n12 -r choice
 
 clear
 
 echo
-echo "Você escolheu a opção $choice"
+echo "Você escolheu o IP: $choice"
 echo
 echo "----------------------------------------------------"
 echo "              Atualiza Data e Hora                  "
 echo "----------------------------------------------------"
 echo
 
-<<EOF
-/bin/rm /etc/localtime 2>/dev/null
-ln -sf /usr/share/zoneinfo/America/Sao_Paulo /etc/localtime
-echo America/Sao_Paulo > /etc/localtime
-
-/etc/init.d/cron restart
-/etc/init.d/ntp restart
-EOF
-
 data=$(date +"%m/%d/%Y %R")
+senha=""
+porta=""
 
-sshpass -p "$senha" ssh -T -a -p 2222 root@"$choice" <<EOF
+sshpass -p "$senha1" ssh -T -o StrictHostKeyChecking=no -p "$porta1" root@"$choice" <<EOF
 hwclock --set --date "$data"
 hwclock -s
 EOF
 
-if [ $? -ne 0 ]; then
-  echo " ----------------------------------------------------------------------------------- "
-  echo "| A mensagem acima mostra que o computador não conseguiu conectar-se ao equipamento |"
-  echo "|   Por favor verifique o cabo de rede conectado, e o Endereço IP do equipamento    |"
-  echo " ----------------------------------------------------------------------------------- "
-  read -n1 -r -s
-  exit 1
+if [ $? -eq 0 ]; then
+  echo "Conexão bem-sucedida com senha1/porta1!"
+  senha="$senha1"
+  porta="$porta1"
+else
+  echo "Conexão falhou com senha1/porta1. Tentando senha2/porta2..."
+  sshpass -p "$senha2" ssh -T -o StrictHostKeyChecking=no -p "$porta2" root@"$choice" <<EOF
+  hwclock --set --date "$data"
+  hwclock -s
+EOF
+
+  if [ $? -eq 0 ]; then
+    echo "Conexão bem-sucedida com senha2/porta2!"
+    senha="$senha2"
+    porta="$porta2"
+  else
+    echo "Conexão falhou com todas as combinações."
+  fi
 fi
 
 clear
@@ -52,7 +60,7 @@ echo
 read -r -p "Pressione qualquer tecla para reiniciar o equipamento e voltar ao menu..."
 echo
 
-sshpass -p "$senha" ssh -T -a -p 2222 root@"$choice" /sbin/reboot
+sshpass -p "$senha" ssh -T -o StrictHostKeyChecking=no -p "$porta" root@"$choice" /sbin/reboot
 echo
 clear
 
